@@ -11,8 +11,8 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
+  - Player
+  - Platforms
   - 
   - 
   - 
@@ -38,6 +38,18 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: BG
+    uniqueID: 1374556569
+    locked: 0
+  - name: Platforms
+    uniqueID: 4251676355
+    locked: 0
+  - name: Props
+    uniqueID: 2189345269
+    locked: 0
+  - name: Player
+    uniqueID: 1003328349
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0
