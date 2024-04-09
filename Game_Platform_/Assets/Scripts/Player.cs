@@ -2,79 +2,61 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    [SerializeField] private float _moveSpeed;
-    [SerializeField] private float _forceJump;
-    [SerializeField] private LayerMask _playerMask;
+    [SerializeField] private float moveSpeed;
+    [SerializeField] private float forceJump;
+    [SerializeField] private BoxCollider2D checkGround;
+    [SerializeField] private LayerMask groundMask;
 
-    private Rigidbody2D _rb;
-    private BoxCollider2D _boxCollider2D;
-    private Animator _animator;
-    private SpriteRenderer _spriteRenderer;
 
-    private bool isDoubleJump = false;
+    private Rigidbody2D rb;
+    private Animator animator;
 
-    private enum State { idle , walk ,jump}
-    private State _state;
+    private enum State { idle , run , jump , attack , hurt , die}
+    private State state;
 
-    private const string STATE = "State";
-    private const string IS_GROUND = "IsGround";
-
+    private const string STATE = "state";
+    private const string IS_GROUND = "isGround";
 
     private void Awake()
     {
-        _rb = GetComponent<Rigidbody2D>();
-        _boxCollider2D = GetComponent<BoxCollider2D>();
-        _animator = GetComponentInChildren<Animator>();
-        _spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+        rb = GetComponent<Rigidbody2D>();
+        animator = GetComponentInChildren<Animator>();
     }
-    private void Start()
-    {
-        
-    }
+
     private void Update()
     {
     }
     private void FixedUpdate()
     {
         HandleMovement();
-        HandleJump();
     }
     private void HandleMovement()
     {
         float inputHorizontal = Input.GetAxisRaw("Horizontal");
-        if (inputHorizontal != 0 && IsGround())
+        Vector3 scale = transform.localScale;
+        if (inputHorizontal != 0)
         {
-            _spriteRenderer.flipX = inputHorizontal > 0f ? false : true;
-            _state = State.walk;
+            scale.x = Mathf.Abs(scale.x) * inputHorizontal;
+            transform.localScale = scale;
+            state = State.run;
         }
         else
         {
-            _state = State.idle;
+            state = State.idle;
         }
-        _rb.velocity = new Vector2(inputHorizontal * _moveSpeed, _rb.velocity.y);
-        _animator.SetInteger(STATE,(int)_state);
-        _animator.SetBool(IS_GROUND, IsGround());
-    }
-    private void HandleJump()
-    {
-        Debug.Log(Input.GetKeyDown(KeyCode.Space));
-        if (Input.GetKeyDown(KeyCode.Space) && IsGround())
+        if ((Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow)) && IsGround())
         {
-            _rb.velocity = new Vector2(_rb.velocity.x, _forceJump);
+            state = State.idle;
+            rb.velocity = new Vector2(rb.velocity.x, forceJump);
         }
-        /*else
-        {
-            if (Input.GetKeyDown(KeyCode.UpArrow) && !isDoubleJump)
-            {
-                _rb.velocity = new Vector2(_rb.velocity.x, _forceJump);
-                isDoubleJump = true;
-            }
-        }*/
-        //_animator.SetInteger(STATE, (int)_state);
+        rb.velocity = new Vector2(moveSpeed * inputHorizontal, rb.velocity.y);
+
+        animator.SetInteger(STATE, (int)state);
+        animator.SetBool(IS_GROUND, IsGround());
     }
     private bool IsGround()
     {
-        RaycastHit2D hit = Physics2D.BoxCast(_boxCollider2D.bounds.center, _boxCollider2D.bounds.size, 0f, Vector2.down, .1f, _playerMask);
+        RaycastHit2D hit = Physics2D.BoxCast(checkGround.bounds.center, checkGround.bounds.size, 0f, Vector2.down, 1f, groundMask);
         return hit.collider != null;
     }
 }
